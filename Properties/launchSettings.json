@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ExportPictures": {
+      "commandName": "Project",
+      "commandLineArgs": "\"C:\\Temp\\Book\\05 - Comparing different time periods.docx\" \"C:\\Temp\\Book\\Figures\""
+    }
+  }
+}
