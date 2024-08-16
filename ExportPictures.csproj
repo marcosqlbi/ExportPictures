@@ -8,6 +8,10 @@
 	  <PublishSingleFile>true</PublishSingleFile>
 	  <SelfContained>true</SelfContained>
 	  <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+	  <PublishReadyToRun>true</PublishReadyToRun>
+	  <PublishTrimmed>true</PublishTrimmed>
+	  <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
+	  <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
