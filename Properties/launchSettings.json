@@ -2,7 +2,7 @@
   "profiles": {
     "ExportPictures": {
       "commandName": "Project",
-      "commandLineArgs": "\"C:\\Temp\\Book\\05 - Comparing different time periods.docx\" \"C:\\Temp\\Book\\Figures\""
+      "commandLineArgs": "-src:\"C:\\temp\\src\\03 - Introducing the filter context and CALCULATE.docx\" -demo:\"C:\\temp\\src\" -dst:\"C:\\Temp\\tmp\" -pic:\"C:\\Temp\\tmppic\" -newChapter:4  -renumber -export "
     }
   }
 }
