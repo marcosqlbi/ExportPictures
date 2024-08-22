@@ -336,28 +336,28 @@ string ExtractTextWithFontStyle(Paragraph paragraph, string fontStyleId)
 
     if (string.IsNullOrWhiteSpace(input))
     {
-        throw new ArgumentException("Input string cannot be null or empty.");
+        throw new ArgumentException($"Input string \"{input}\" cannot be null or empty.");
     }
 
     if (!input.StartsWith(ExpectedPrefix))
     {
-        throw new ArgumentException("Invalid format. The name must start with 'Figure'.");
+        throw new ArgumentException($"Invalid format \"{input}\". The name must start with 'Figure'.");
     }
 
     var match = Regex.Match(input, @"Figure\s+(\d+)-(\d+)");
     if (!match.Success)
     {
-        throw new ArgumentException("Invalid format. Expected 'Figure X-Y'.");
+        throw new ArgumentException($"Invalid format \"{input}\". Expected 'Figure X-Y'.");
     }
 
     if (!int.TryParse(match.Groups[1].Value, out int chapterNumber) || chapterNumber < 1 || chapterNumber > MaxNumber)
     {
-        throw new ArgumentException("Invalid chapter number. It must be a valid number between 1 and 99.");
+        throw new ArgumentException($"Invalid chapter number \"{input}\". It must be a valid number between 1 and 99.");
     }
 
     if (!int.TryParse(match.Groups[2].Value, out int figureNumber) || figureNumber < 1 || figureNumber > MaxNumber)
     {
-        throw new ArgumentException("Invalid figure number. It must be a valid number between 1 and 99.");
+        throw new ArgumentException($"Invalid figure number \"{input}\". It must be a valid number between 1 and 99.");
     }
 
     return (chapterNumber, figureNumber);
