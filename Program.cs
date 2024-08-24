@@ -161,7 +161,6 @@ IEnumerable<(WordprocessingDocument wordDoc, Paragraph paragraph, Paragraph next
             }
         }
     }
-    
 }
 
 List<(int chapterNumber, int oldFigureNumber, int newFigureNumber)> ExtractFigureList(WordprocessingDocument wordDoc, int chapterNumber)
@@ -287,6 +286,7 @@ void DumpOrphanFigureReferences(List<string> orphanFigureReferences)
 
 void ExportImagesWithSpecificStyleFromWordDocument(WordprocessingDocument wordDoc, int chapterNumber, string exportFolder)
 {
+
     foreach (var p in IterateNumCaptionParagraphs(wordDoc))
     {
         // Extract text with "Fig Num" font style
@@ -323,7 +323,9 @@ string ExtractTextWithFontStyle(Paragraph paragraph, string fontStyleId)
     var runsWithStyle = paragraph.Descendants<Run>()
                                  .Where(r => r.RunProperties != null &&
                                              r.RunProperties.RunStyle != null &&
-                                             r.RunProperties.RunStyle.Val.Value == fontStyleId;
+                                             r.RunProperties.RunStyle.Val.Value == fontStyleId && 
+                                             r.RsidRunDeletion == null
+                                        );
 
     return string.Concat(runsWithStyle.Select(r => r.InnerText));
 }
