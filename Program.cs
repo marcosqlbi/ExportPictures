@@ -323,7 +323,7 @@ string ExtractTextWithFontStyle(Paragraph paragraph, string fontStyleId)
     var runsWithStyle = paragraph.Descendants<Run>()
                                  .Where(r => r.RunProperties != null &&
                                              r.RunProperties.RunStyle != null &&
-                                             r.RunProperties.RunStyle.Val.Value == fontStyleId);
+                                             r.RunProperties.RunStyle.Val.Value == fontStyleId;
 
     return string.Concat(runsWithStyle.Select(r => r.InnerText));
 }
@@ -398,11 +398,17 @@ string MakeValidFileName(string name, ref int chapterNumber)
 int ExtractChapterNumber(string filePath)
 {
     Regex regex = new Regex(@"\d+"); // Regular expression to find one or more digits
-    Match match = regex.Match(filePath);
+    Match matchFilename = regex.Match(Path.GetFileName(filePath));
+    Match matchPath = regex.Match(filePath);
 
-    if (match.Success)
+
+    if (matchFilename.Success)
     {
-        return int.Parse(match.Value); // Convert the found number to an integer
+        return int.Parse(matchFilename.Value); // Convert the found number to an integer
+    }
+    else if (matchPath.Success)
+    {
+        return int.Parse(matchPath.Value); // Convert the found number to an integer
     }
     else
     {
