@@ -2,7 +2,7 @@
   "profiles": {
     "ExportPictures": {
       "commandName": "Project",
-      "commandLineArgs": "-src:\"C:\\temp\\src3\\03 - Introducing the filter context and CALCULATE.docx\" -demo:\"C:\\temp\\src3\" -dst:\"C:\\Temp\\tmp\" -pic:\"C:\\Temp\\tmppic\" -renumber -export "
+      "commandLineArgs": "-src:\"c:\\temp\\book\\02 - Introducing DAX.docx\" -dst:\"C:\\Temp\\Book\\CH02\" -demo:\"C:\\temp\\book\\Demo02\" -pic:\"C:\\temp\\book\\Pic\" -renumber -export"
     }
   }
 }

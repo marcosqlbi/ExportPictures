@@ -141,7 +141,7 @@ IEnumerable<(WordprocessingDocument wordDoc, Paragraph paragraph, Paragraph next
 
 
     var paragraphs = wordDoc.MainDocumentPart?.Document.Body?.Descendants<Paragraph>()
-        .Where(p => IsParagraphOfStyle(p, "Fig-Graphic"))
+        .Where(p => IsParagraphOfStyle(p, "Fig-Graphic") || IsParagraphOfStyle(p, "SbarFig-Graphic"))
         .OrderBy(p => GetParagraphIndex(p));
     if (paragraphs != null)
     {
@@ -150,13 +150,31 @@ IEnumerable<(WordprocessingDocument wordDoc, Paragraph paragraph, Paragraph next
             var nextParagraph = paragraph.NextSibling<Paragraph>();
             if (nextParagraph != null)
             {
-                if (IsParagraphOfStyle(nextParagraph, "Num-Caption"))
+                if (IsParagraphOfStyle(paragraph, "Fig-Graphic"))
                 {
-                    yield return (wordDoc, paragraph, nextParagraph);
+                    if (IsParagraphOfStyle(nextParagraph, "Num-Caption"))
+                    {
+                        yield return (wordDoc, paragraph, nextParagraph);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException($"Stile incorrect - there should be Num-Caption: {nextParagraph?.InnerText}");
+                    }
+                } 
+                else if (IsParagraphOfStyle(paragraph, "SbarFig-Graphic"))
+                {
+                    if (IsParagraphOfStyle(nextParagraph, "SbarNum-Caption"))
+                    {
+                        yield return (wordDoc, paragraph, nextParagraph);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException($"Stile incorrect - there should be Sbar Num-Caption: {nextParagraph?.InnerText}");
+                    }
                 }
                 else
                 {
-                    throw new InvalidOperationException($"Stile incorrect - there should be Num-Caption: {nextParagraph?.InnerText}");
+                    throw new InvalidOperationException($"Stile incorrect - there should be Fig-Graphic or Sbar Fig-Graphic: {paragraph?.InnerText}");
                 }
             }
         }
@@ -262,7 +280,7 @@ void DumpOrphanFigures(List<(int chapterNumber, int oldFigureNumber, int newFigu
     Console.ForegroundColor = ConsoleColor.White;
     foreach (var orphanFigure in orphanFigures)
     {
-        Console.WriteLine($"F {orphanFigure.chapterNumber:D2}-{orphanFigure.oldFigureNumber:D2}.* was not found in the source folder.");
+        Console.WriteLine($"F {orphanFigure.chapterNumber:D2} {orphanFigure.oldFigureNumber:D2}.* was not found in the source folder.");
     }
     Console.ForegroundColor = ConsoleColor.Red;
     Console.WriteLine("--------------");
