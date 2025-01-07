@@ -13,7 +13,7 @@ using System.Xml;
 using WebBackLibrary.Service;
 
 
-List<(int chapterNumber, int oldFigureNumber, int newFigureNumber)> GetUnreferencedFigures(WordprocessingDocument wordDoc, List<(int chapterNumber, int oldFigureNumber, int newFigureNumber)> figures)
+List<(int oldChapterNumber, int newChapterNumber, int oldFigureNumber, int newFigureNumber)> GetUnreferencedFigures(WordprocessingDocument wordDoc, List<(int oldChapterNumber, int newChapterNumber, int oldFigureNumber, int newFigureNumber)> figures)
 {
     var paragraphs = wordDoc.MainDocumentPart.Document.Body.Descendants<Paragraph>();
     var regex = new Regex(@"\s(\d{1,2})-(\d+)");
@@ -38,7 +38,7 @@ List<(int chapterNumber, int oldFigureNumber, int newFigureNumber)> GetUnreferen
     }
 
     var unreferencedFigures = figures.Where(figure =>
-        !referencedFigures.Contains((figure.chapterNumber, figure.oldFigureNumber))).ToList();
+        !referencedFigures.Contains((figure.oldChapterNumber, figure.oldFigureNumber))).ToList();
 
     return unreferencedFigures;
 }
@@ -50,41 +50,41 @@ bool IsParagraphOfStyle(Paragraph paragraph, string styleId)
            paragraph.ParagraphProperties.ParagraphStyleId.Val?.Value == styleId;
 }
 
-void DumpUnreferencedFigures(List<(int chapterNumber, int oldFigureNumber, int newFigureNumber)> unreferencedFigures)
+void DumpUnreferencedFigures(List<(int oldChapterNumber, int cìnewChapterNumber, int oldFigureNumber, int newFigureNumber)> unreferencedFigures)
 {
     Console.ForegroundColor = ConsoleColor.Red;
     Console.WriteLine("UNREFERENCED FIGURES in Word Document");
     Console.ForegroundColor = ConsoleColor.White;
     foreach (var unreferencedFigure in unreferencedFigures)
     {
-        Console.WriteLine($"{unreferencedFigure.chapterNumber}-{unreferencedFigure.oldFigureNumber}");
+        Console.WriteLine($"{unreferencedFigure.oldChapterNumber}-{unreferencedFigure.oldFigureNumber}");
     }
     Console.ForegroundColor = ConsoleColor.Red;
     Console.WriteLine("--------------------");
     Console.ResetColor();
 }
 
-void ReplaceFigureReferences(WordprocessingDocument wordDoc, List<(int chapterNumber, int oldFigureNumber, int newFigureNumber)> figures, int destChapterNumber)
+void ReplaceFigureReferences(WordprocessingDocument wordDoc, List<(int oldChapterNumber, int newChapterNumber, int oldFigureNumber, int newFigureNumber)> figures)
 {
     figures = figures.OrderByDescending(f => f.oldFigureNumber).ToList();
     foreach (var f in figures)
     {
-        var replaceWhat = $" {f.chapterNumber}-{f.oldFigureNumber}";
-        var replaceFor = $"*{f.chapterNumber}*{f.oldFigureNumber}";
+        var replaceWhat = $" {f.oldChapterNumber}-{f.oldFigureNumber}";
+        var replaceFor = $"*{f.oldChapterNumber}*{f.oldFigureNumber}";
         // Console.WriteLine($"Replacing {replaceWhat} with {replaceFor}");
         WordDocumentService.ReplaceStringInWordDocument(wordDoc, replaceWhat.ToString(), replaceFor);
     }
 
     foreach (var f in figures)
     {
-        var replaceWhat = $"*{f.chapterNumber}*{f.oldFigureNumber}";
-        var replaceFor = $" {destChapterNumber}-{f.newFigureNumber}";
-        Console.WriteLine($"Replacing {f.chapterNumber}-{f.oldFigureNumber} with {replaceFor}");
+        var replaceWhat = $"*{f.oldChapterNumber}*{f.oldFigureNumber}";
+        var replaceFor = $" {f.newChapterNumber}-{f.newFigureNumber}";
+        Console.WriteLine($"Replacing {f.oldChapterNumber}-{f.oldFigureNumber} with {replaceFor}");
         WordDocumentService.ReplaceStringInWordDocument(wordDoc, replaceWhat.ToString(), replaceFor);
     }
 }
 
-List<string> GetOrphanFigureReferences(WordprocessingDocument wordDoc, List<(int chapterNumber, int oldFigureNumber, int newFigureNumber)> figures, int chapterNumber)
+List<string> GetOrphanFigureReferences(WordprocessingDocument wordDoc, List<(int oldChapterNumber, int newChapterNumber, int oldFigureNumber, int newFigureNumber)> figures)
 {
     var paragraphs = wordDoc.MainDocumentPart.Document.Body.Descendants<Paragraph>();
     var regex = new Regex(@"\s(\d{1,2})-(\d+)");
@@ -104,7 +104,7 @@ List<string> GetOrphanFigureReferences(WordprocessingDocument wordDoc, List<(int
 
                     // Check if the figure reference exists in the figures list
                     bool existsInFigures = figures.Any(figure =>
-                        chapterNumber == chapterReference &&
+                        figure.oldChapterNumber == chapterReference &&
                         figure.oldFigureNumber == figureReference);
 
                     if (!existsInFigures)
@@ -181,9 +181,9 @@ IEnumerable<(WordprocessingDocument wordDoc, Paragraph paragraph, Paragraph next
     }
 }
 
-List<(int chapterNumber, int oldFigureNumber, int newFigureNumber)> ExtractFigureList(WordprocessingDocument wordDoc, int chapterNumber)
+List<(int oldChapterNumber, int newChapterNumber, int oldFigureNumber, int newFigureNumber)> ExtractFigureList(WordprocessingDocument wordDoc, int destChapterNumber)
 {
-    List<(int chapterNumber, int oldFigureNumber, int newFigureNumber)> figures = new List<(int,int,int)>();
+    List<(int oldChapterNumber, int newChapterNumber, int oldFigureNumber, int newFigureNumber)> figures = new List<(int, int, int, int)>();
 
     int index = 0;
     foreach (var p in IterateNumCaptionParagraphs(wordDoc))
@@ -192,42 +192,41 @@ List<(int chapterNumber, int oldFigureNumber, int newFigureNumber)> ExtractFigur
         if (!string.IsNullOrWhiteSpace(imageName))
         {
             var figureString = ParseFigureString(imageName);
-            if (figures.Count(f => f.oldFigureNumber == figureString.figureNumber) > 0)
+            if (figures.Count(f => f.oldChapterNumber == figureString.chapterNumber && f.oldFigureNumber == figureString.figureNumber) > 0)
             {
-                throw new InvalidOperationException($"Duplicate figure number {chapterNumber}-{figureString.figureNumber}.");
+                throw new InvalidOperationException($"Duplicate figure number {figureString.chapterNumber}-{figureString.figureNumber}.");
             }
-            figures.Add((chapterNumber, figureString.figureNumber, ++index));
+            figures.Add((figureString.chapterNumber, destChapterNumber, figureString.figureNumber, ++index));
         }
     }
     return figures;
-    
 }
 
-void CopyDemoFiles(List<(int chapterNumber, int oldFigureNumber, int newFigureNumber)> figures, string sourceFolder, string destinationFolder, int sourceChapterNumber, int destChapterNumber)
+void CopyDemoFiles(List<(int oldChapterNumber, int newChapterNumber, int oldFigureNumber, int newFigureNumber)> figures, string sourceFolder, string destinationFolder, int sourceChapterNumber)
 {
     Console.WriteLine($"Source folder: {sourceFolder}");
     Console.WriteLine($"Dest. folder:  {destinationFolder}");
     foreach (var figure in figures)
     {
-        string oldFileName = $"F {sourceChapterNumber:D2} {figure.oldFigureNumber:D2}.*";
+        string oldFileName = $"F {figure.oldChapterNumber:D2} {figure.oldFigureNumber:D2}.*";
         string[] matchingFiles = Directory.GetFiles(sourceFolder, oldFileName);
 
         foreach (var matchingFile in matchingFiles)
         {
-            string newFileName = $"F {destChapterNumber:D2} {figure.newFigureNumber:D2}" + Path.GetExtension(matchingFile);
+            string newFileName = $"F {figure.newChapterNumber:D2} {figure.newFigureNumber:D2}" + Path.GetExtension(matchingFile);
             string destinationPath = Path.Combine(destinationFolder, newFileName);
             File.Copy(matchingFile, destinationPath,overwrite:true);
             Console.WriteLine($"Copied: {Path.GetFileName(matchingFile)} to {Path.GetFileName(destinationPath)}");
         }
     }
 }
-List<(int chapterNumber, int oldFigureNumber, int newFigureNumber)> GetOrphanFigures(List<(int chapterNumber, int oldFigureNumber, int newFigureNumber)> figures, string sourceFolder, int chapterNumber)
+List<(int oldChapterNumber, int newChapterNumber, int oldFigureNumber, int newFigureNumber)> GetOrphanFigures(List<(int oldChapterNumber, int newChapterNumber, int oldFigureNumber, int newFigureNumber)> figures, string sourceFolder)
 {
-    List<(int chapterNumber, int oldFigureNumber, int newFigureNumber)> orphanFigures = new List<(int, int, int)>();
+    List<(int oldChapterNumber, int newChapterNumber, int oldFigureNumber, int newFigureNumber)> orphanFigures = new List<(int, int, int, int)>();
 
     foreach (var figure in figures)
     {
-        string oldFileName = $"F {chapterNumber:D2} {figure.oldFigureNumber:D2}.*";
+        string oldFileName = $"F {figure.oldChapterNumber:D2} {figure.oldFigureNumber:D2}.*";
         string[] matchingFiles = Directory.GetFiles(sourceFolder, oldFileName);
 
         if (matchingFiles.Length == 0)
@@ -238,7 +237,7 @@ List<(int chapterNumber, int oldFigureNumber, int newFigureNumber)> GetOrphanFig
     return orphanFigures;
 }
 
-List<string> GetOrphanFiles(List<(int chapterNumber, int oldFigureNumber, int newFigureNumber)> figures, string sourceFolder, int chapterNumber)
+List<string> GetOrphanFiles(List<(int oldChapterNumber, int chapterNumber, int oldFigureNumber, int newFigureNumber)> figures, string sourceFolder)
 {
     List<string> orphanFiles = new List<string>();
 
@@ -249,7 +248,7 @@ List<string> GetOrphanFiles(List<(int chapterNumber, int oldFigureNumber, int ne
         string fileName = Path.GetFileName(sourceFile);
 
         bool existsInFigures = figures.Any(figure =>
-            fileName.StartsWith($"F {chapterNumber:D2} {figure.oldFigureNumber:D2}"));
+            fileName.StartsWith($"F {figure.oldChapterNumber:D2} {figure.oldFigureNumber:D2}"));
 
         if (!existsInFigures)
         {
@@ -273,14 +272,14 @@ void DumpOrphanFiles(List<string> orphanFiles)
     Console.ResetColor();
 }
 
-void DumpOrphanFigures(List<(int chapterNumber, int oldFigureNumber, int newFigureNumber)> orphanFigures)
+void DumpOrphanFigures(List<(int oldChapterNumber, int newChapterNumber, int oldFigureNumber, int newFigureNumber)> orphanFigures)
 {
     Console.ForegroundColor = ConsoleColor.Red;
     Console.WriteLine("ORPHAN FIGURES");
     Console.ForegroundColor = ConsoleColor.White;
     foreach (var orphanFigure in orphanFigures)
     {
-        Console.WriteLine($"F {orphanFigure.chapterNumber:D2} {orphanFigure.oldFigureNumber:D2}.* was not found in the source folder.");
+        Console.WriteLine($"F {orphanFigure.oldChapterNumber:D2} {orphanFigure.oldFigureNumber:D2}.* was not found in the source folder.");
     }
     Console.ForegroundColor = ConsoleColor.Red;
     Console.WriteLine("--------------");
@@ -570,11 +569,11 @@ try
         {
             var figures = ExtractFigureList(wordDoc, sourceChapterNumber);
 
-            var orphanFiles = GetOrphanFiles(figures, demoFolder, sourceChapterNumber);
+            var orphanFiles = GetOrphanFiles(figures, demoFolder);
             if (orphanFiles.Count > 0) DumpOrphanFiles(orphanFiles);
-            var orphanFigures = GetOrphanFigures(figures, demoFolder, sourceChapterNumber);
+            var orphanFigures = GetOrphanFigures(figures, demoFolder);
             if (orphanFigures.Count > 0) DumpOrphanFigures(orphanFigures);
-            var orphanFigureReferences = GetOrphanFigureReferences(wordDoc, figures, sourceChapterNumber);
+            var orphanFigureReferences = GetOrphanFigureReferences(wordDoc, figures);
             if (orphanFigureReferences.Count > 0) DumpOrphanFigureReferences(orphanFigureReferences);
             var unreferencedFigures = GetUnreferencedFigures(wordDoc, figures);
             if (unreferencedFigures.Count > 0) DumpUnreferencedFigures(unreferencedFigures);
@@ -585,11 +584,11 @@ try
             }
             if (renumber)
             {
-                ReplaceFigureReferences(wordDoc, figures, destChapterNumber);
+                ReplaceFigureReferences(wordDoc, figures);
                 if (!checkOnly) 
                 {
                     wordDoc.Save();
-                    CopyDemoFiles(figures, demoFolder, dstFolder, sourceChapterNumber, destChapterNumber);
+                    CopyDemoFiles(figures, demoFolder, dstFolder, sourceChapterNumber);
                 }
             }
         }
