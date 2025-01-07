@@ -2,7 +2,7 @@
   "profiles": {
     "ExportPictures": {
       "commandName": "Project",
-      "commandLineArgs": "-src:\"c:\\temp\\book\\02 - Introducing DAX.docx\" -dst:\"C:\\Temp\\Book\\CH02\" -demo:\"C:\\temp\\book\\Demo02\" -pic:\"C:\\temp\\book\\Pic\" -renumber -export"
+      "commandLineArgs": "-src:\"c:\\temp\\book\\09 - Working with the evaluation context.docx\" -dst:\"C:\\Temp\\Book\\CH09\" -demo:\"C:\\temp\\book\\Chapter 09\" -pic:\"C:\\temp\\book\\Pic\" -renumber -export"
     }
   }
 }

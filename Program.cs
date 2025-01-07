@@ -109,7 +109,7 @@ List<string> GetOrphanFigureReferences(WordprocessingDocument wordDoc, List<(int
 
                     if (!existsInFigures)
                     {
-                        orphanFigureReferences.Add(match.Value);
+                        orphanFigureReferences.Add($"{match.Value} --> {paragraph.InnerText}");
                     }
                 }
             }
