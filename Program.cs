@@ -158,7 +158,7 @@ IEnumerable<(WordprocessingDocument wordDoc, Paragraph paragraph, Paragraph next
                     }
                     else
                     {
-                        throw new InvalidOperationException($"Stile incorrect - there should be Num-Caption: {nextParagraph?.InnerText}");
+                        throw new InvalidOperationException($"Style incorrect - there should be Num-Caption: {paragraph?.InnerText}");
                     }
                 } 
                 else if (IsParagraphOfStyle(paragraph, "SbarFig-Graphic"))
@@ -169,12 +169,12 @@ IEnumerable<(WordprocessingDocument wordDoc, Paragraph paragraph, Paragraph next
                     }
                     else
                     {
-                        throw new InvalidOperationException($"Stile incorrect - there should be Sbar Num-Caption: {nextParagraph?.InnerText}");
+                        throw new InvalidOperationException($"Style incorrect - there should be Sbar Num-Caption: {nextParagraph?.InnerText}");
                     }
                 }
                 else
                 {
-                    throw new InvalidOperationException($"Stile incorrect - there should be Fig-Graphic or Sbar Fig-Graphic: {paragraph?.InnerText}");
+                    throw new InvalidOperationException($"Style incorrect - there should be Fig-Graphic or Sbar Fig-Graphic: {paragraph?.InnerText}");
                 }
             }
         }
